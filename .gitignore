@@ -1,0 +1,50 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+vendor/
+
+# Build outputs
+dist/
+build/
+*.log
+*.pid
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backend specific
+logs/
+*.sql
+*.sql.gz
+
+# Flutter specific
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+coverage/
+*.apk
+*.aab
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Sensitive
+credentials.json
+keystore.jks
+*.pem
+*.key
