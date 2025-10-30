@@ -2,7 +2,10 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
+
+const { errorHandler } = require('./middleware/errorHandler');
+const { apiLimiter } = require('./middleware/rateLimiter');
+const db = require('./models');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -23,12 +26,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.',
-});
-app.use('/api/', limiter);
+app.use('/api/', apiLimiter);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -39,13 +37,17 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API routes (will be added)
+// API routes
+const authRoutes = require('./routes/authRoutes');
+
 app.get('/api/v1', (req, res) => {
   res.json({
     message: 'DealBaron API v1.0',
     status: 'running',
   });
 });
+
+app.use('/api/v1/auth', authRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -58,23 +60,33 @@ app.use((req, res) => {
   });
 });
 
-// Error handler
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(err.status || 500).json({
-    success: false,
-    error: {
-      code: err.code || 'INTERNAL_ERROR',
-      message: err.message || 'Internal server error',
-    },
-  });
-});
+// Error handler (must be last middleware)
+app.use(errorHandler);
 
-// Start server
-app.listen(PORT, HOST, () => {
-  console.log(`🚀 DealBaron API running on http://${HOST}:${PORT}`);
-  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🏥 Health check: http://${HOST}:${PORT}/health`);
-});
+// Start server with database connection
+const startServer = async () => {
+  try {
+    // Test database connection
+    await db.sequelize.authenticate();
+    console.log('✅ Database connection established successfully');
+
+    // Start Express server
+    app.listen(PORT, HOST, () => {
+      console.log(`🚀 DealBaron API running on http://${HOST}:${PORT}`);
+      console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`🏥 Health check: http://${HOST}:${PORT}/health`);
+    });
+  } catch (error) {
+    console.error('❌ Unable to connect to database:', error.message);
+    console.error('⚠️  Starting server without database connection');
+
+    // Start server anyway for development
+    app.listen(PORT, HOST, () => {
+      console.log(`🚀 DealBaron API running on http://${HOST}:${PORT} (No DB)`);
+    });
+  }
+};
+
+startServer();
 
 module.exports = app;
