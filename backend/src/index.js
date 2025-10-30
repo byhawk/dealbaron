@@ -39,15 +39,33 @@ app.get('/health', (req, res) => {
 
 // API routes
 const authRoutes = require('./routes/authRoutes');
+const productRoutes = require('./routes/productRoutes');
+const marketRoutes = require('./routes/marketRoutes');
+const dealBaronRoutes = require('./routes/dealBaronRoutes');
+const businessRoutes = require('./routes/businessRoutes');
+const productionRoutes = require('./routes/productionRoutes');
 
 app.get('/api/v1', (req, res) => {
   res.json({
     message: 'DealBaron API v1.0',
     status: 'running',
+    endpoints: {
+      auth: '/api/v1/auth',
+      products: '/api/v1/products',
+      market: '/api/v1/market',
+      dealbaron: '/api/v1/dealbaron',
+      business: '/api/v1/business',
+      production: '/api/v1/production',
+    },
   });
 });
 
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/products', productRoutes);
+app.use('/api/v1/market', marketRoutes);
+app.use('/api/v1/dealbaron', dealBaronRoutes);
+app.use('/api/v1/business', businessRoutes);
+app.use('/api/v1/production', productionRoutes);
 
 // 404 handler
 app.use((req, res) => {
