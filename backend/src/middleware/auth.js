@@ -84,7 +84,7 @@ const optionalAuth = async (req, res, next) => {
 };
 
 // Generate JWT token
-const generateToken = (playerId, expiresIn = '7d') => {
+const generateToken = (playerId, expiresIn = process.env.JWT_EXPIRES_IN || '90d') => {
   return jwt.sign({ playerId }, process.env.JWT_SECRET, { expiresIn });
 };
 
